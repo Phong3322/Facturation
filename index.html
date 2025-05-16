@@ -1,1 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BAY HARDWARE</title>
+  <style>
+    body { font-family: Arial; max-width: 600px; margin: auto; padding: 20px; }
+    input, select { margin: 5px; }
+    table, th, td { border: 1px solid #ccc; border-collapse: collapse; padding: 8px; }
+    table { width: 100%; margin-top: 10px; }
+    #facture { white-space: pre-wrap; background: #f4f4f4; padding: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Facturation Yakuza</h2>
+  <label for="produit">Produits :</label>
+  <select id="produit">
+    <option value="Produit A" data-prix="100">Réactifs Chimiques - 25$</option>
+    <option value="Produit B" data-prix="200">Plastique - 15$</option>
+    <option value="Produit C" data-prix="50">Boites - 120$</option>
+  </select>
+  <label for="quantite">Quantité :</label>
+  <input type="number" id="quantite" min="1" value="1">
+  <button onclick="ajouterLigne()">Ajouter</button>
+
+  <table id="tableFacture">
+    <thead>
+      <tr><th>Produit</th><th>Quantité</th><th>Prix</th><th>Total</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h3>Total : <span id="total">0</span>$</h3>
+  <button onclick="envoyerFacture()">Envoyer sur Discord</button>
+
+  <h3>Prévisualisation :</h3>
+  <div id="facture"></div>
+
+  <script>
+    const lignes = [];
+    function ajouterLigne() {
+      const select = document.getElementById("produit");
+      const produit = select.value;
+      const prix = parseInt(select.selectedOptions[0].dataset.prix);
+      const quantite = parseInt(document.getElementById("quantite").value);
+      const total = prix * quantite;
+      lignes.push({ produit, quantite, prix, total });
+      majTable();
+    }
+
+    function majTable() {
+      const tbody = document.querySelector("#tableFacture tbody");
+      tbody.innerHTML = "";
+      let totalFacture = 0;
+      lignes.forEach(ligne => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${ligne.produit}</td><td>${ligne.quantite}</td><td>${ligne.prix}$</td><td>${ligne.total}$</td>`;
+        tbody.appendChild(tr);
+        totalFacture += ligne.total;
+      });
+      document.getElementById("total").textContent = totalFacture;
+      genererTexteFacture();
+    }
+
+    function genererTexteFacture() {
+      let texte = "**FACTURE GTA RP**\n";
+      lignes.forEach(ligne => {
+        texte += `• ${ligne.produit} x${ligne.quantite} - ${ligne.total}$\n`;
+      });
+      texte += `\n**Total : ${document.getElementById("total").textContent}$**`;
+      document.getElementById("facture").textContent = texte;
+    }
+
+    function envoyerFacture() {
+      const webhookURL = "https://discord.com/api/webhooks/1353477757216100453/m07Bx4ChBUhvq8oWw29ICoiPfN0iPHfLsg8dW7zrY_e_7Z5KM6Tgsv7Rrog8rLNU_bi7";
+      const contenu = document.getElementById("facture").textContent;
+      fetch(webhookURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: contenu })
+      })
+      .then(res => {
+        if (res.ok) alert("Facture envoyée sur Discord !");
+        else alert("Erreur lors de l'envoi.");
+      });
+    }
+  </script>
+</body>
+</html>
 
